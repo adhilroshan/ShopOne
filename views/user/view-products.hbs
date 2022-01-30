@@ -1,0 +1,42 @@
+
+    <section>   
+        <div class="container mt-5">
+            <div class="row">
+                {{#each products}}
+                <div class="col-md-3 p-3">
+                    <div class="card" style="width: 15rem; height:fit-content">
+                        <img src="/product-images/{{this._id}}.png"
+                            class="card-img-top" alt="Card image cap" style="height: 12rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{this.Name}}</h5>
+                                <p class="card-text">{{this.Price}}</p>
+                            <p class="card-text">{{this.Description}}</p>
+                            <img src = "/images/amazon.png">
+                            {{!-- <a href="javascript:addToCart({{this._id}})" class="btn btn-primary">Add to Cart</a> --}}
+                            <button onclick="addToCart('{{this._id}}')" class="btn btn-primary">Add to Cart</button>
+                            
+                        </div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function addToCart(proId){
+            $.ajax({
+                url:'/add-to-cart/'+proId,
+                method:'get',
+                success:(response)=>{
+                    if(response.status){
+                        let count=$('#cart-count').html()
+                        count=parseInt(count)+1 
+                        $("#cart-count").html(count)
+                    }
+                    {{!-- alert('Item Added to Cart') --}}
+                }
+            })
+            console.log("ajax Called");
+        }
+    </script>

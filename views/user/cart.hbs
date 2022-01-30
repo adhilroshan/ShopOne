@@ -1,0 +1,116 @@
+<section onload="checkDisBtns();" class="container mt-5">
+    <div class="row">
+        {{#if products}}
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Item</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each products}}
+                <tr>
+                    <td><img src="product-images/{{this.product._id}}.jpg" style="width: 100px;height:auto;" alt="">
+                    </td>
+                    <td>{{this.product.Name}}</td>
+                    <td>Rs: {{this.product.Price}}</td>
+                    <td>
+                        <button class="btn btn-secondary m-1" id="btn-{{this.product._id}}"
+                            onclick="changeQuantity('{{this._id}}','{{this.product._id}}','{{../user._id}}',-1)">-</button>
+
+                        <span id="{{this.product._id}}">{{this.quantity}}</span>
+
+                        <button class="btn btn-secondary m-1"
+                            onclick="changeQuantity('{{this._id}}','{{this.product._id}}','{{../user._id}}',1)">+</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger"
+                            onclick="deleteProduct('{{this._id}}','{{this.product._id}}')">Remove</button>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        <div class="col-md-12">
+            <hr class="w-100">
+            <div class="float-right">
+                <h4 class="mr-5 mt-1 ">Total : Rs. <span id="total">{{totalValue}}</span></h4>
+                <a href="/place-order" class="btn btn-success mt-2 pl-5 pr-5 mb-5">Place Order</a>
+            </div>
+        </div>
+
+
+
+        {{else}}
+        <div class="col-md-12">
+            <h4 class="text-danger text-center"><strong>Cart is empty now...</strong></h4>
+            <div class="col-md-12">
+                <a href="/" class=" btn-block text-center mt-2 mb-5 p-5"><strong>Add products to cart or go
+                        back</strong></a>
+            </div>
+        </div>
+        {{/if}}
+    </div>
+</section>
+
+<script>
+    function changeQuantity(cartId, proId, userId, count) {
+        let quantity = parseInt(document.getElementById(proId).innerHTML)
+        count = parseInt(count)
+        $.ajax({
+            url: '/change-product-quantity',
+            data: {
+                user: userId,
+                cart: cartId,
+                product: proId,
+                count: count,
+                quantity: quantity
+            },
+            method: 'post',
+            success: async (response) => {
+                if (response.removeProduct) {
+                    await swal("Product removed from cart", "", "info")
+                    location.reload()
+                } else {
+                    document.getElementById(proId).innerHTML = quantity + count;
+                    document.getElementById('total').innerHTML = response.total;
+                }
+            }
+        })
+    }
+    function deleteProduct(cartId, proId) {
+        swal({
+            title: "Are you sure?",
+            text: "If you continue, the product will be removed from the cart!",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        url: '/delete-product',
+                        data: {
+                            cart: cartId,
+                            product: proId
+                        },
+                        method: 'post',
+                        success: async (response) => {
+                            if (response.removeProduct) {
+                                await swal("Product removed from cart", "", "info")
+                                location.reload()
+                            } else {
+                                await swal("An server issue found,try again please...", "", "error")
+                            }
+                        }
+                    })
+                } else {
+                    swal("Product isn't deleted..!");
+                }
+            });
+    }
+</script>
